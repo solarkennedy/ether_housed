@@ -1,1 +1,1 @@
-web: demoapp
+web: ether_house_server
