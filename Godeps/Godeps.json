@@ -1,0 +1,5 @@
+{
+	"ImportPath": "github.com/solarkennedy/ether_house_server",
+	"GoVersion": "go1.2.1",
+	"Deps": []
+}
