@@ -8,8 +8,12 @@ import (
 
 func main() {
     http.HandleFunc("/", hello)
-    fmt.Println("listening...")
-    err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+    port := os.Getenv("PORT")
+    if port == ""{
+        panic("No PORT variable. Please set one")
+    }
+    fmt.Println("listening on " + port + "..." )
+    err := http.ListenAndServe(":"+port, nil)
     if err != nil {
       panic(err)
     }
@@ -17,4 +21,5 @@ func main() {
 
 func hello(res http.ResponseWriter, req *http.Request) {
     fmt.Fprintln(res, "hello, world")
+    fmt.Println("200: hello, world")
 }
