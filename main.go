@@ -6,15 +6,30 @@ import (
     "os"
     "log"
     "log/syslog"
+    "sync"
 )
 
 type Common struct {
-    state map[int]bool
+    lock sync.RWMutex
+    state map[string]bool
 }
 
 func NewCommon() (c *Common, e error) {
     // load data
     return c, e
+}
+
+func (c *Common) Get(key string) (*bool, bool) {
+    c.lock.RLock()
+    defer c.lock.RUnlock()
+    d, ok := c.state[key]
+    return &d, ok
+}
+
+func (c *Common) Set(key string, d *bool) {
+    c.lock.Lock()
+    defer c.lock.Unlock()
+    c.state[key] = *d
 }
 
 func setup_logging() {
