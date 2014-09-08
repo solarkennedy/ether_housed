@@ -8,6 +8,15 @@ import (
     "log/syslog"
 )
 
+type Common struct {
+    state map[int]bool
+}
+
+func NewCommon() (c *Common, e error) {
+    // load data
+    return c, e
+}
+
 func setup_logging() {
     logwriter, e := syslog.New(syslog.LOG_NOTICE, "ether_housed")
     if e == nil {
@@ -16,11 +25,13 @@ func setup_logging() {
 }
 
 func main() {
-    http.HandleFunc("/", usage)
-    http.HandleFunc("/on", usage)
-    http.HandleFunc("/off", usage)
-    http.HandleFunc("/state", usage)
-    http.HandleFunc("/target_mac", usage)
+    common, common_err := NewCommon()
+    if common_err != nil { panic("Couldn't something") }
+    http.HandleFunc("/", common.usage)
+    http.HandleFunc("/on", common.usage)
+    http.HandleFunc("/off", common.usage)
+    http.HandleFunc("/state", common.handle_state)
+    http.HandleFunc("/target_mac", common.usage)
 
     port := os.Getenv("PORT")
     if port == ""{
@@ -34,8 +45,25 @@ func main() {
     }
 }
 
-func usage(res http.ResponseWriter, req *http.Request) {
+func (c *Common) usage(res http.ResponseWriter, req *http.Request) {
     msg := "Welcome to ether_house."
     fmt.Fprintln(res, msg)
-    fmt.Println("200: " + msg)
+    log.Println("200: " + msg)
 }
+
+func (c *Common) state_handler(res http.ResponseWriter, req *http.Request) {
+    params := req.URL.Query()
+    api_key := params.Get("api_key")
+    validate_key(api_key, 0)
+}
+
+func (c *Common) handle_state(res http.ResponseWriter, req *http.Request) {
+    msg := "Welcome to state."
+    fmt.Fprintln(res, msg)
+    log.Println("200: " + msg)
+}
+
+func validate_key(api_key string, house_id int) (bool){
+    return true
+}
+
