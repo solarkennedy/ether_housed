@@ -1,1 +1,1 @@
-web: ether_house_server
+web: ether_housed
