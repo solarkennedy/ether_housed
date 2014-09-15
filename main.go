@@ -11,7 +11,9 @@ import (
 
 type Common struct {
 	lock  sync.RWMutex
-	state map[string]bool
+	state map[int]bool
+	api_key map[int]string
+	target_mac map[int]string
 }
 
 func NewCommon() (c *Common, e error) {
@@ -19,17 +21,17 @@ func NewCommon() (c *Common, e error) {
 	return c, e
 }
 
-func (c *Common) Get(key string) (*bool, bool) {
+func (c *Common) Get(id int) (*bool, bool) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
-	d, ok := c.state[key]
+	d, ok := c.state[id]
 	return &d, ok
 }
 
-func (c *Common) Set(key string, d *bool) {
+func (c *Common) Set(id int, d *bool) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	c.state[key] = *d
+	c.state[id] = *d
 }
 
 func setup_logging() {
