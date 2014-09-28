@@ -4,23 +4,24 @@ import (
 	"fmt"
 	"log"
 	"log/syslog"
+	"math"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
-"math"
-      "strconv"
 )
 
 const NUM_HOUSES = 8
 
 type common struct {
-	lock  sync.RWMutex
-	state []bool
-	api_key []string
+	lock       sync.RWMutex
+	state      []bool
+	api_key    []string
 	target_mac []string
 }
 
 var Common = new(common)
+
 /*
 func NewCommon() (c *Common, e error) {
 	cstate := load_existing_state()
@@ -33,25 +34,24 @@ func NewCommon() (c *Common, e error) {
 
 func load_existing_state() {
 	// TODO: Get state out of memcache
-//        Common.state = []bool {true, true, true, true, false, false, false, false}
-        Common.state = []bool {false, false, false, false, true, true, true, true}
-       // Common.state = []bool {true, false, true, false, true, false, true, false}
+	//        Common.state = []bool {true, true, true, true, false, false, false, false}
+	Common.state = []bool{false, false, false, false, true, true, true, true}
+	// Common.state = []bool {true, false, true, false, true, false, true, false}
 	return
 }
 
-
 func load_secrets() {
-  Common.api_key = []string { "", "", "", "", "", "", "", "" }
-  for i := 0; i < NUM_HOUSES; i++ {
-     Common.api_key[i] = os.Getenv("APIKEY" + strconv.Itoa(i))
-     if Common.api_key[i] == "" {
-        log.Println("WARNING: Didn't get an API key for " + strconv.Itoa(i) + ".")
-     }
-     log.Println("INFO: API Key for " + strconv.Itoa(i) + " is " + Common.api_key[i])
-  }
+	Common.api_key = []string{"", "", "", "", "", "", "", ""}
+	for i := 0; i < NUM_HOUSES; i++ {
+		Common.api_key[i] = os.Getenv("APIKEY" + strconv.Itoa(i))
+		if Common.api_key[i] == "" {
+			log.Println("WARNING: Didn't get an API key for " + strconv.Itoa(i) + ".")
+		}
+		log.Println("INFO: API Key for " + strconv.Itoa(i) + " is " + Common.api_key[i])
+	}
 }
 
-func Get(id int) (*bool) {
+func Get(id int) *bool {
 	Common.lock.RLock()
 	defer Common.lock.RUnlock()
 	d := Common.state[id]
@@ -72,8 +72,8 @@ func setup_logging() {
 }
 
 func main() {
-        load_existing_state()
-        load_secrets()
+	load_existing_state()
+	load_secrets()
 	http.HandleFunc("/", usage)
 	http.HandleFunc("/on", turn_on)
 	http.HandleFunc("/off", turn_off)
@@ -110,14 +110,14 @@ func state_handler(res http.ResponseWriter, req *http.Request) {
 }
 
 func handle_state(res http.ResponseWriter, req *http.Request) {
-        // Convert our array of booleans into a binary representation for http output
-        state_value := int64(0)
-        for index,value := range Common.state {
-               if value == true {
-                     state_value += int64(math.Exp2(float64(index)))
-               }
-        }
-        fmt.Fprintf(res, "%c", state_value)
+	// Convert our array of booleans into a binary representation for http output
+	state_value := int64(0)
+	for index, value := range Common.state {
+		if value == true {
+			state_value += int64(math.Exp2(float64(index)))
+		}
+	}
+	fmt.Fprintf(res, "%c", state_value)
 	log.Printf("200: Current State: %8b", state_value)
 }
 
@@ -144,8 +144,8 @@ func validate_key(api_key string, house_id int) bool {
 }
 
 func btoi(b bool) int {
-    if b {
-        return 1
-    }
-    return 0
- }
+	if b {
+		return 1
+	}
+	return 0
+}
