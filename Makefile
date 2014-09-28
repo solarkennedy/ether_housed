@@ -6,4 +6,5 @@ run:
 	go run main.go'
 
 deps:
-	godep get
+# Ignoring for now
+#	godep get
