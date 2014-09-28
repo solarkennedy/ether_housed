@@ -5,6 +5,7 @@ import (
 	"log"
 	"log/syslog"
 	"math"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -29,7 +30,20 @@ func load_existing_state() {
 	return
 }
 
-func load_secrets() {
+func load_target_macs() {
+	// We get the config for which MAC addresses are associated with each house
+	// From the environment
+	Common.target_mac = []string{"", "", "", "", "", "", "", ""}
+	for i := 0; i < NUM_HOUSES; i++ {
+		Common.target_mac[i] = os.Getenv("MAC" + strconv.Itoa(i))
+		if Common.target_mac[i] == "" {
+			log.Println("WARNING: Didn't get an MAC for " + strconv.Itoa(i) + ".")
+		}
+		log.Println("INFO: MAC for " + strconv.Itoa(i) + " is " + Common.target_mac[i])
+	}
+}
+
+func load_api_keys() {
 	Common.api_key = []string{"", "", "", "", "", "", "", ""}
 	for i := 0; i < NUM_HOUSES; i++ {
 		Common.api_key[i] = os.Getenv("APIKEY" + strconv.Itoa(i))
@@ -62,7 +76,8 @@ func setup_logging() {
 
 func main() {
 	load_existing_state()
-	load_secrets()
+	load_api_keys()
+	load_target_macs()
 	http.HandleFunc("/", usage)
 	http.HandleFunc("/on", turn_on)
 	http.HandleFunc("/off", turn_off)
@@ -104,6 +119,11 @@ func boolarraytoint(bool_array []bool) (the_int int64) {
 	return the_int
 }
 
+func mactobinary(mac string) (output []byte) {
+	output, _ = net.ParseMAC(mac)
+	return output
+}
+
 func handle_state(res http.ResponseWriter, req *http.Request) {
 	query, err := url.ParseQuery(req.URL.RawQuery)
 	if err != nil {
@@ -124,9 +144,24 @@ func handle_state(res http.ResponseWriter, req *http.Request) {
 }
 
 func target_mac_handler(res http.ResponseWriter, req *http.Request) {
-	msg := "Welcome to target_mac."
-	fmt.Fprintln(res, msg)
-	log.Println("200: " + msg)
+	query, err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		http.Error(res, "500: Couldn't parse query", 500)
+		log.Printf("500: Error on %v", req.URL.RawQuery)
+	}
+	api_key := query["api_key"][0]
+	house_id_string := query["id"][0]
+	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
+	if validate_key(api_key, int(house_id)) {
+		target_mac := Common.target_mac[house_id]
+		target_mac_binary := mactobinary(target_mac)
+		target_mac_string := string(target_mac_binary[:6])
+		fmt.Fprintf(res, target_mac_string)
+		log.Printf("200: target_mac: ", target_mac)
+	} else {
+		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
+		log.Printf("403: /state from %v, using api key %v", house_id, api_key)
+	}
 }
 
 func turn_on(res http.ResponseWriter, req *http.Request) {
