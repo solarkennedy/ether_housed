@@ -94,12 +94,6 @@ func usage(res http.ResponseWriter, req *http.Request) {
 	log.Println("200: " + req.URL.Path)
 }
 
-func state_handler(res http.ResponseWriter, req *http.Request) {
-	params := req.URL.Query()
-	api_key := params.Get("api_key")
-	validate_key(api_key, 0)
-}
-
 func handle_state(res http.ResponseWriter, req *http.Request) {
 	query, err := url.ParseQuery(req.URL.RawQuery)
 	if err != nil {
@@ -146,4 +140,3 @@ func turn_off(res http.ResponseWriter, req *http.Request) {
 func validate_key(api_key string, house_id int) bool {
 	return Common.api_key[house_id] == api_key
 }
-
