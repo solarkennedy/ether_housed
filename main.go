@@ -7,31 +7,47 @@ import (
 	"net/http"
 	"os"
 	"sync"
+"math"
+      //"strconv"
 )
 
-type Common struct {
+type common struct {
 	lock  sync.RWMutex
-	state map[int]bool
-	api_key map[int]string
-	target_mac map[int]string
+	state []bool
+	api_key []string
+	target_mac []string
 }
 
+var Common = new(common)
+/*
 func NewCommon() (c *Common, e error) {
-	// load data
+	cstate := load_existing_state()
+	fmt.Println(cstate[0])
+//	copy(cstate, c.state)
+	c.state = cstate
 	return c, e
 }
+*/
 
-func (c *Common) Get(id int) (*bool, bool) {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
-	d, ok := c.state[id]
-	return &d, ok
+func load_existing_state() {
+	// TODO: Get state out of memcache
+//        Common.state = []bool {true, true, true, true, false, false, false, false}
+        Common.state = []bool {false, false, false, false, true, true, true, true}
+       // Common.state = []bool {true, false, true, false, true, false, true, false}
+	return
 }
 
-func (c *Common) Set(id int, d *bool) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	c.state[id] = *d
+func Get(id int) (*bool) {
+	Common.lock.RLock()
+	defer Common.lock.RUnlock()
+	d := Common.state[id]
+	return &d
+}
+
+func Set(id int, d *bool) {
+	Common.lock.Lock()
+	defer Common.lock.Unlock()
+	Common.state[id] = *d
 }
 
 func setup_logging() {
@@ -42,15 +58,12 @@ func setup_logging() {
 }
 
 func main() {
-	common, common_err := NewCommon()
-	if common_err != nil {
-		panic("Couldn't something")
-	}
-	http.HandleFunc("/", common.usage)
-	http.HandleFunc("/on", common.turn_on)
-	http.HandleFunc("/off", common.turn_off)
-	http.HandleFunc("/state", common.handle_state)
-	http.HandleFunc("/target_mac", common.target_mac)
+        load_existing_state()
+	http.HandleFunc("/", usage)
+	http.HandleFunc("/on", turn_on)
+	http.HandleFunc("/off", turn_off)
+	http.HandleFunc("/state", handle_state)
+	http.HandleFunc("/target_mac", target_mac_handler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -64,7 +77,7 @@ func main() {
 	}
 }
 
-func (c *Common) usage(res http.ResponseWriter, req *http.Request) {
+func usage(res http.ResponseWriter, req *http.Request) {
 	if req.URL.Path != "/" {
 		http.NotFound(res, req)
 		log.Println("404: " + req.URL.Path)
@@ -75,31 +88,37 @@ func (c *Common) usage(res http.ResponseWriter, req *http.Request) {
 	log.Println("200: " + req.URL.Path)
 }
 
-func (c *Common) state_handler(res http.ResponseWriter, req *http.Request) {
+func state_handler(res http.ResponseWriter, req *http.Request) {
 	params := req.URL.Query()
 	api_key := params.Get("api_key")
 	validate_key(api_key, 0)
 }
 
-func (c *Common) handle_state(res http.ResponseWriter, req *http.Request) {
-	msg := "Welcome to state."
-	fmt.Fprintln(res, msg)
-	log.Println("200: " + msg)
+func handle_state(res http.ResponseWriter, req *http.Request) {
+        // Convert our array of booleans into a binary representation for http output
+        state_value := int64(0)
+        for index,value := range Common.state {
+               if value == true {
+                     state_value += int64(math.Exp2(float64(index)))
+               }
+        }
+        fmt.Fprintf(res, "%c", state_value)
+	log.Printf("200: Current State: %8b", state_value)
 }
 
-func (c *Common) target_mac(res http.ResponseWriter, req *http.Request) {
+func target_mac_handler(res http.ResponseWriter, req *http.Request) {
 	msg := "Welcome to target_mac."
 	fmt.Fprintln(res, msg)
 	log.Println("200: " + msg)
 }
 
-func (c *Common) turn_on(res http.ResponseWriter, req *http.Request) {
+func turn_on(res http.ResponseWriter, req *http.Request) {
 	msg := "Welcome to turn_on."
 	fmt.Fprintln(res, msg)
 	log.Println("200: " + msg)
 }
 
-func (c *Common) turn_off(res http.ResponseWriter, req *http.Request) {
+func turn_off(res http.ResponseWriter, req *http.Request) {
 	msg := "Welcome to turn_off."
 	fmt.Fprintln(res, msg)
 	log.Println("200: " + msg)
@@ -108,3 +127,10 @@ func (c *Common) turn_off(res http.ResponseWriter, req *http.Request) {
 func validate_key(api_key string, house_id int) bool {
 	return true
 }
+
+func btoi(b bool) int {
+    if b {
+        return 1
+    }
+    return 0
+ }
