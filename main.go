@@ -6,6 +6,7 @@ import (
 	"log/syslog"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"sync"
@@ -110,23 +111,24 @@ func state_handler(res http.ResponseWriter, req *http.Request) {
 }
 
 func handle_state(res http.ResponseWriter, req *http.Request) {
-        query, err := url.ParseQuery(req.URL.RawQuery)
-        api_key = query["api_key"]
-        house_id = query["id"]
-	if validate_key(api_key, house_id ) {
-	// Convert our array of booleans into a binary representation for http output
-	state_value := int64(0)
-	for index, value := range Common.state {
-		if value == true {
-			state_value += int64(math.Exp2(float64(index)))
+	query, _ := url.ParseQuery(req.URL.RawQuery)
+	api_key := query["api_key"][0]
+	house_id_string := query["id"][0]
+	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
+	if validate_key(api_key, int(house_id)) {
+		// Convert our array of booleans into a binary representation for http output
+		state_value := int64(0)
+		for index, value := range Common.state {
+			if value == true {
+				state_value += int64(math.Exp2(float64(index)))
+			}
 		}
+		fmt.Fprintf(res, "%c", state_value)
+		log.Printf("200: Current State: %8b", state_value)
+	} else {
+		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
+		log.Printf("403: /state from %v, using api key %v", house_id, api_key)
 	}
-	fmt.Fprintf(res, "%c", state_value)
-	log.Printf("200: Current State: %8b", state_value)
-        } 
-       else {
-http.Error(w, "403 Forbidden : you can't access this resource.", 403)
- }
 }
 
 func target_mac_handler(res http.ResponseWriter, req *http.Request) {
@@ -148,7 +150,7 @@ func turn_off(res http.ResponseWriter, req *http.Request) {
 }
 
 func validate_key(api_key string, house_id int) bool {
-        return Common.api_key[house_id] == api_key
+	return Common.api_key[house_id] == api_key
 }
 
 func btoi(b bool) int {
