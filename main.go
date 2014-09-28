@@ -8,8 +8,10 @@ import (
 	"os"
 	"sync"
 "math"
-      //"strconv"
+      "strconv"
 )
+
+const NUM_HOUSES = 8
 
 type common struct {
 	lock  sync.RWMutex
@@ -37,6 +39,18 @@ func load_existing_state() {
 	return
 }
 
+
+func load_secrets() {
+  Common.api_key = []string { "", "", "", "", "", "", "", "" }
+  for i := 0; i < NUM_HOUSES; i++ {
+     Common.api_key[i] = os.Getenv("APIKEY" + strconv.Itoa(i))
+     if Common.api_key[i] == "" {
+        log.Println("WARNING: Didn't get an API key for " + strconv.Itoa(i) + ".")
+     }
+     log.Println("INFO: API Key for " + strconv.Itoa(i) + " is " + Common.api_key[i])
+  }
+}
+
 func Get(id int) (*bool) {
 	Common.lock.RLock()
 	defer Common.lock.RUnlock()
@@ -59,6 +73,7 @@ func setup_logging() {
 
 func main() {
         load_existing_state()
+        load_secrets()
 	http.HandleFunc("/", usage)
 	http.HandleFunc("/on", turn_on)
 	http.HandleFunc("/off", turn_off)
