@@ -1,5 +1,5 @@
 test:
-	go test -v
+	go test -v -bench=.
 
 run:
 	bash -c 'source secrets.sh && \

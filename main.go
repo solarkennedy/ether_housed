@@ -94,6 +94,16 @@ func usage(res http.ResponseWriter, req *http.Request) {
 	log.Println("200: " + req.URL.Path)
 }
 
+func boolarraytoint(bool_array []bool) (the_int int64) {
+	// Convert our array of booleans into a binary representation for http output
+	for index, value := range bool_array {
+		if value == true {
+			the_int += int64(math.Exp2(float64(index)))
+		}
+	}
+	return the_int
+}
+
 func handle_state(res http.ResponseWriter, req *http.Request) {
 	query, err := url.ParseQuery(req.URL.RawQuery)
 	if err != nil {
@@ -104,13 +114,7 @@ func handle_state(res http.ResponseWriter, req *http.Request) {
 	house_id_string := query["id"][0]
 	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
 	if validate_key(api_key, int(house_id)) {
-		// Convert our array of booleans into a binary representation for http output
-		state_value := int64(0)
-		for index, value := range Common.state {
-			if value == true {
-				state_value += int64(math.Exp2(float64(index)))
-			}
-		}
+		state_value := boolarraytoint(Common.state)
 		fmt.Fprintf(res, "%c", state_value)
 		log.Printf("200: Current State: %8b", state_value)
 	} else {
