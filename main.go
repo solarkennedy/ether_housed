@@ -110,6 +110,10 @@ func state_handler(res http.ResponseWriter, req *http.Request) {
 }
 
 func handle_state(res http.ResponseWriter, req *http.Request) {
+        query, err := url.ParseQuery(req.URL.RawQuery)
+        api_key = query["api_key"]
+        house_id = query["id"]
+	if validate_key(api_key, house_id ) {
 	// Convert our array of booleans into a binary representation for http output
 	state_value := int64(0)
 	for index, value := range Common.state {
@@ -119,6 +123,10 @@ func handle_state(res http.ResponseWriter, req *http.Request) {
 	}
 	fmt.Fprintf(res, "%c", state_value)
 	log.Printf("200: Current State: %8b", state_value)
+        } 
+       else {
+http.Error(w, "403 Forbidden : you can't access this resource.", 403)
+ }
 }
 
 func target_mac_handler(res http.ResponseWriter, req *http.Request) {
@@ -140,7 +148,7 @@ func turn_off(res http.ResponseWriter, req *http.Request) {
 }
 
 func validate_key(api_key string, house_id int) bool {
-	return true
+        return Common.api_key[house_id] == api_key
 }
 
 func btoi(b bool) int {
