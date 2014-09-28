@@ -23,21 +23,9 @@ type common struct {
 
 var Common = new(common)
 
-/*
-func NewCommon() (c *Common, e error) {
-	cstate := load_existing_state()
-	fmt.Println(cstate[0])
-//	copy(cstate, c.state)
-	c.state = cstate
-	return c, e
-}
-*/
-
 func load_existing_state() {
 	// TODO: Get state out of memcache
-	//        Common.state = []bool {true, true, true, true, false, false, false, false}
 	Common.state = []bool{false, false, false, false, true, true, true, true}
-	// Common.state = []bool {true, false, true, false, true, false, true, false}
 	return
 }
 
@@ -111,7 +99,11 @@ func state_handler(res http.ResponseWriter, req *http.Request) {
 }
 
 func handle_state(res http.ResponseWriter, req *http.Request) {
-	query, _ := url.ParseQuery(req.URL.RawQuery)
+	query, err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		http.Error(res, "500: Couldn't parse query", 500)
+		log.Printf("500: Error on %v", req.URL.RawQuery)
+	}
 	api_key := query["api_key"][0]
 	house_id_string := query["id"][0]
 	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
@@ -153,9 +145,3 @@ func validate_key(api_key string, house_id int) bool {
 	return Common.api_key[house_id] == api_key
 }
 
-func btoi(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
-}
