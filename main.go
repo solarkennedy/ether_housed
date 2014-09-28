@@ -87,7 +87,9 @@ func usage(res http.ResponseWriter, req *http.Request) {
 		log.Println("404: " + req.URL.Path)
 		return
 	}
-	msg := "Welcome to ether_house."
+	msg := "Welcome to ether_house.\n"
+	msg += "Source code: https://github.com/solarkennedy/ether_housed \n"
+	msg += "Client code: https://github.com/solarkennedy/ether_house \n"
 	fmt.Fprintln(res, msg)
 	log.Println("200: " + req.URL.Path)
 }
