@@ -8,3 +8,6 @@ run:
 deps:
 # Ignoring for now
 #	godep get
+
+push_config:
+	./push-config.sh
