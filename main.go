@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"strings"
 )
 
 const NUM_HOUSES = 8
@@ -35,7 +36,7 @@ func load_target_macs() {
 	// From the environment
 	Common.target_mac = []string{"", "", "", "", "", "", "", ""}
 	for i := 0; i < NUM_HOUSES; i++ {
-		Common.target_mac[i] = os.Getenv("MAC" + strconv.Itoa(i))
+		Common.target_mac[i] = strings.TrimSpace(os.Getenv("MAC" + strconv.Itoa(i)))
 		if Common.target_mac[i] == "" {
 			log.Println("WARNING: Didn't get an MAC for " + strconv.Itoa(i) + ".")
 		}
@@ -46,7 +47,7 @@ func load_target_macs() {
 func load_api_keys() {
 	Common.api_key = []string{"", "", "", "", "", "", "", ""}
 	for i := 0; i < NUM_HOUSES; i++ {
-		Common.api_key[i] = os.Getenv("APIKEY" + strconv.Itoa(i))
+		Common.api_key[i] = strings.TrimSpace(os.Getenv("APIKEY" + strconv.Itoa(i)))
 		if Common.api_key[i] == "" {
 			log.Println("WARNING: Didn't get an API key for " + strconv.Itoa(i) + ".")
 		}
@@ -154,7 +155,15 @@ func target_mac_handler(res http.ResponseWriter, req *http.Request) {
 	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
 	if validate_key(api_key, int(house_id)) {
 		target_mac := Common.target_mac[house_id]
+log.Printf(target_mac)
 		target_mac_binary := mactobinary(target_mac)
+log.Printf("%X", target_mac_binary[0])
+log.Printf("%X", target_mac_binary[1])
+log.Printf("%X", target_mac_binary[2])
+log.Printf("%X", target_mac_binary[3])
+log.Printf("%X", target_mac_binary[4])
+log.Printf("%X", target_mac_binary[5])
+log.Printf("%X", target_mac_binary[:6])
 		target_mac_string := string(target_mac_binary[:6])
 		fmt.Fprintf(res, target_mac_string)
 		log.Printf("200: target_mac: ", target_mac)
