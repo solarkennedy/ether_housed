@@ -36,7 +36,7 @@ func load_target_macs() {
 	// From the environment
 	Common.target_mac = []string{"", "", "", "", "", "", "", ""}
 	for i := 0; i < NUM_HOUSES; i++ {
-		Common.target_mac[i] = strings.TrimSpace(os.Getenv("MAC" + strconv.Itoa(i)))
+		Common.target_mac[i] = strings.ToUpper(strings.TrimSpace(os.Getenv("MAC" + strconv.Itoa(i))))
 		if Common.target_mac[i] == "" {
 			log.Println("WARNING: Didn't get an MAC for " + strconv.Itoa(i) + ".")
 		}
