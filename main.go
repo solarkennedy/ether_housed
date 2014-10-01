@@ -130,6 +130,8 @@ func mactobinary(mac string) (output []byte) {
 }
 
 func get_state_as_int() (state_int int64){
+        Common.lock.Lock()
+        defer Common.lock.Unlock()
 	return boolarraytoint(Common.state)
 }
 
