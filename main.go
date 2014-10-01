@@ -121,7 +121,8 @@ func boolarraytoint(bool_array []bool) (the_int int64) {
 }
 
 func mactobinary(mac string) (output []byte) {
-	output, _ = net.ParseMAC(mac)
+	output, err := net.ParseMAC(mac)
+log.Printf("%v, %v", output, err)
 	return output
 }
 
