@@ -25,6 +25,8 @@ type common struct {
 
 var Common = new(common)
 
+// Get is a method on the common struct to safely read
+// the state id of a particular house
 func (c *common) Get(id int) bool {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
