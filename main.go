@@ -25,6 +25,20 @@ type common struct {
 
 var Common = new(common)
 
+func (c *common) Get(id int) *bool {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	d := c.state[id]
+	return &d
+}
+
+func (c *common) Set(id int, d *bool) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.state[id] = *d
+}
+
+
 func load_existing_state() {
 	// TODO: Get state out of memcache
 	Common.state = []bool{false, false, false, false, true, true, true, true}
@@ -53,19 +67,6 @@ func load_api_keys() {
 		}
 		log.Println("INFO: API Key for " + strconv.Itoa(i) + " is " + Common.api_key[i])
 	}
-}
-
-func Get(id int) *bool {
-	Common.lock.RLock()
-	defer Common.lock.RUnlock()
-	d := Common.state[id]
-	return &d
-}
-
-func Set(id int, d *bool) {
-	Common.lock.Lock()
-	defer Common.lock.Unlock()
-	Common.state[id] = *d
 }
 
 func setup_logging() {
@@ -128,6 +129,10 @@ func mactobinary(mac string) (output []byte) {
 	return output
 }
 
+func get_state_as_int() (state_int int64){
+	return boolarraytoint(Common.state)
+}
+
 func handle_state(res http.ResponseWriter, req *http.Request) {
 	query, err := url.ParseQuery(req.URL.RawQuery)
 	if err != nil {
@@ -138,7 +143,7 @@ func handle_state(res http.ResponseWriter, req *http.Request) {
 	house_id_string := query["id"][0]
 	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
 	if validate_key(api_key, int(house_id)) {
-		state_value := boolarraytoint(Common.state)
+		state_value := get_state_as_int()
 		fmt.Fprintf(res, "%c", state_value)
 		log.Printf("200: Current State: %8b", state_value)
 	} else {
