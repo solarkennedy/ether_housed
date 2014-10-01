@@ -25,17 +25,17 @@ type common struct {
 
 var Common = new(common)
 
-func (c *common) Get(id int) *bool {
+func (c *common) Get(id int) bool {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	d := c.state[id]
-	return &d
+	return d
 }
 
-func (c *common) Set(id int, d *bool) {
+func (c *common) Set(id int, d bool) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	c.state[id] = *d
+	c.state[id] = d
 }
 
 
@@ -176,15 +176,39 @@ func target_mac_handler(res http.ResponseWriter, req *http.Request) {
 }
 
 func turn_on(res http.ResponseWriter, req *http.Request) {
-	msg := "Welcome to turn_on."
-	fmt.Fprintln(res, msg)
-	log.Println("200: " + msg)
+	query, err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		http.Error(res, "500: Couldn't parse query", 500)
+		log.Printf("500: Error on %v", req.URL.RawQuery)
+	}
+	api_key := query["api_key"][0]
+	house_id_string := query["id"][0]
+	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
+	if validate_key(api_key, int(house_id)) {
+		Common.Set(int(house_id), true)
+		log.Printf("200: turn_on: %v", house_id)
+	} else {
+		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
+		log.Printf("403: /state from %v, using api key %v", house_id, api_key)
+	}
 }
 
 func turn_off(res http.ResponseWriter, req *http.Request) {
-	msg := "Welcome to turn_off."
-	fmt.Fprintln(res, msg)
-	log.Println("200: " + msg)
+	query, err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		http.Error(res, "500: Couldn't parse query", 500)
+		log.Printf("500: Error on %v", req.URL.RawQuery)
+	}
+	api_key := query["api_key"][0]
+	house_id_string := query["id"][0]
+	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
+	if validate_key(api_key, int(house_id)) {
+		Common.Set(int(house_id), false)
+		log.Printf("200: turn_off: %v", house_id)
+	} else {
+		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
+		log.Printf("403: /state from %v, using api key %v", house_id, api_key)
+	}
 }
 
 func validate_key(api_key string, house_id int) bool {
