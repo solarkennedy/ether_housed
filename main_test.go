@@ -1,4 +1,4 @@
-package main
+package ether_housed
 
 import "testing"
 

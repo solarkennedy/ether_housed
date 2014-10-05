@@ -2,8 +2,9 @@ test:
 	go test -v -bench=.
 
 run:
+	go build .
 	bash -c 'source secrets.sh && \
-	go run main.go'
+	./ether_housed'
 
 deps:
 # Ignoring for now
