@@ -1,5 +1,5 @@
 // Currently everything for ether_housed is in the main package
-package ether_housed
+package main
 
 import (
 	"fmt"
@@ -90,6 +90,7 @@ func main() {
 	http.HandleFunc("/on", turn_on)
 	http.HandleFunc("/off", turn_off)
 	http.HandleFunc("/state", handle_state)
+	http.HandleFunc("/info", handle_info)
 	http.HandleFunc("/target_mac", target_mac_handler)
 
 	port := os.Getenv("PORT")
@@ -157,6 +158,24 @@ func handle_state(res http.ResponseWriter, req *http.Request) {
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
 		log.Printf("403: /state from %v, using api key %v", house_id, api_key)
+	}
+}
+
+func handle_info(res http.ResponseWriter, req *http.Request) {
+	query, err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		http.Error(res, "500: Couldn't parse query", 500)
+		log.Printf("500: Error on %v", req.URL.RawQuery)
+	}
+        api_key := query["api_key"][0]
+	house_id_string := query["id"][0]
+	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
+	if validate_key(api_key, int(house_id)) {
+		fmt.Fprintf(res, "Information on house_id %v", house_id)
+		log.Printf("200: /info for %v", house_id)
+	} else {
+		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
+		log.Printf("403: /info from %v, using api key %v", house_id, api_key)
 	}
 }
 

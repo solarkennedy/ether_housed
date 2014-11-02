@@ -2,7 +2,7 @@ test:
 	go test -v -bench=.
 
 run:
-	go build .
+	go build . 
 	bash -c 'source secrets.sh && \
 	./ether_housed'
 
@@ -12,3 +12,6 @@ deps:
 
 push_config:
 	./push-config.sh
+
+clean:
+	rm ether_housed
