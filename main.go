@@ -45,7 +45,7 @@ func (c *common) Set(id int, d bool) {
 // load_existing_state pulls state from an external datastore
 func load_existing_state() {
 	// BUG: Get state out of memcache
-	Common.state = []bool{false, false, false, false, true, true, true, true}
+	Common.state = []bool{false, false, false, false, false, false, false, false}
 	return
 }
 
