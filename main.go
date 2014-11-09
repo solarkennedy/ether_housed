@@ -152,7 +152,7 @@ func handle_state(res http.ResponseWriter, req *http.Request) {
 		state_value := get_state_as_int()
 		tmp_bytes := []byte{byte(state_value)}
 		res.Write(tmp_bytes)
-		log.Printf("200: Current State: %8b", state_value)
+		log.Printf("200: Current State: %08b", state_value)
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
 		log.Printf("403: /state from %v, using api key %v", house_id, api_key)
@@ -169,7 +169,7 @@ func handle_info(res http.ResponseWriter, req *http.Request) {
 		target_mac := Common.target_mac[house_id]
 		fmt.Fprintf(res, "Hi!!! Curious about how this works? Here is some debug info.\n\n\n")
 		fmt.Fprintf(res, "Information on house_id: %v\n", house_id)
-		fmt.Fprintf(res, "Current state: "+"%8b (%v)\n", state_value, state_value)
+		fmt.Fprintf(res, "Current state: "+"%08b (%v)\n", state_value, state_value)
 		fmt.Fprintf(res, "Target MAC Address: %v\n\n\n", target_mac)
 		fmt.Fprintf(res, "Server Source code: https://github.com/solarkennedy/ether_housed \n")
 		fmt.Fprintf(res, "Client code: https://github.com/solarkennedy/ether_house \n")
