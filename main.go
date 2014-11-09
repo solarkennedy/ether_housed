@@ -83,7 +83,20 @@ func setup_logging() {
 
 var chttp = http.NewServeMux()
 
+func initialize_memcached() {
+	servers := os.Getenv("MEMCACHEDCLOUD_SERVERS")
+	username := os.Getenv("MEMCACHEDCLOUD_USERNAME")
+	password := os.Getenv("MEMCACHEDCLOUD_PASSWORD")
+	if servers != "" && username != "" && password != "" {
+		log.Println("Read memcache config from env")
+	} else {
+		log.Println("Failed to read memcache from env. Going without it.")
+	}
+}
+
 func main() {
+	initialize_memcached()
+
 	load_existing_state()
 	load_api_keys()
 	load_target_macs()
