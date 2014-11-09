@@ -164,6 +164,7 @@ func handle_info(res http.ResponseWriter, req *http.Request) {
 	if validate_key(api_key, int(house_id)) {
 		state_value := get_state_as_int()
 		target_mac := Common.target_mac[house_id]
+		fmt.Fprintf(res, "Hi!!! Curious about how this works? Here is some debug info.\n\n\n")
 		fmt.Fprintf(res, "Information on house_id: %v\n", house_id)
 		fmt.Fprintf(res, "Current state: "+"%8b (%v)\n", state_value, state_value)
 		fmt.Fprintf(res, "Target MAC Address: %v\n\n\n", target_mac)
