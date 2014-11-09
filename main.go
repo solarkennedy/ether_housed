@@ -8,7 +8,6 @@ import (
 	"math"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -163,7 +162,13 @@ func handle_info(res http.ResponseWriter, req *http.Request) {
 	house_id_string := query.Get("id")
 	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
 	if validate_key(api_key, int(house_id)) {
-		fmt.Fprintf(res, "Information on house_id %v", house_id)
+		state_value := get_state_as_int()
+		target_mac := Common.target_mac[house_id]
+		fmt.Fprintf(res, "Information on house_id: %v\n", house_id)
+		fmt.Fprintf(res, "Current state: "+"%8b (%v)\n", state_value, state_value)
+		fmt.Fprintf(res, "Target MAC Address: %v\n\n\n", target_mac)
+		fmt.Fprintf(res, "Server Source code: https://github.com/solarkennedy/ether_housed \n")
+		fmt.Fprintf(res, "Client code: https://github.com/solarkennedy/ether_house \n")
 		log.Printf("200: /info for %v", house_id)
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
