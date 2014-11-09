@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"github.com/bradfitz/gomemcache/memcache"
 )
 
 const NUM_HOUSES = 8
@@ -90,6 +91,9 @@ func initialize_memcached() {
 	if servers != "" && username != "" && password != "" {
 		log.Println("Read memcache config from env")
 	} else {
+		log.Println("Failed to read MEMCACHEDCLOUD Variables. Trying localhost next")
+		mc := memcache.New("127.0.0.1:11211")
+		fmt.Println(mc)
 		log.Println("Failed to read memcache from env. Going without it.")
 	}
 }

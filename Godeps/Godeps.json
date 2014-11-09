@@ -1,5 +1,11 @@
 {
-	"ImportPath": "github.com/solarkennedy/ether_house_server",
-	"GoVersion": "go1.2.1",
-	"Deps": []
+	"ImportPath": "github.com/solarkennedy/ether_housed",
+	"GoVersion": "go1.3.3",
+	"Deps": [
+		{
+			"ImportPath": "github.com/bradfitz/gomemcache/memcache",
+			"Comment": "release.r60-40-g72a6864",
+			"Rev": "72a68649ba712ee7c4b5b4a943a626bcd7d90eb8"
+		}
+	]
 }
