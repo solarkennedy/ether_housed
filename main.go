@@ -136,9 +136,9 @@ func mactobinary(mac string) (output []byte) {
 	return output
 }
 
-func get_state_as_int() (state_int int64){
-        Common.lock.Lock()
-        defer Common.lock.Unlock()
+func get_state_as_int() (state_int int64) {
+	Common.lock.Lock()
+	defer Common.lock.Unlock()
 	return boolarraytoint(Common.state)
 }
 
@@ -167,7 +167,7 @@ func handle_info(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "500: Couldn't parse query", 500)
 		log.Printf("500: Error on %v", req.URL.RawQuery)
 	}
-        api_key := query["api_key"][0]
+	api_key := query["api_key"][0]
 	house_id_string := query["id"][0]
 	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
 	if validate_key(api_key, int(house_id)) {
@@ -219,13 +219,9 @@ func turn_on(res http.ResponseWriter, req *http.Request) {
 }
 
 func turn_off(res http.ResponseWriter, req *http.Request) {
-	query, err := url.ParseQuery(req.URL.RawQuery)
-	if err != nil {
-		http.Error(res, "500: Couldn't parse query", 500)
-		log.Printf("500: Error on %v", req.URL.RawQuery)
-	}
-	api_key := query["api_key"][0]
-	house_id_string := query["id"][0]
+	query := req.URL.Query()
+	api_key := query.Get("api_key")
+	house_id_string := query.Get("id")
 	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
 	if validate_key(api_key, int(house_id)) {
 		Common.Set(int(house_id), false)
