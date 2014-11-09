@@ -23,6 +23,7 @@ type common struct {
 	state      []bool
 	api_key    []string
 	target_mac []string
+	mc         *mc.Conn
 }
 
 var Common = new(common)
@@ -84,7 +85,7 @@ func setup_logging() {
 
 var chttp = http.NewServeMux()
 
-func initialize_memcached() {
+func initialize_memcached() *mc.Conn {
 	servers := os.Getenv("MEMCACHEDCLOUD_SERVERS")
 	if servers != "" {
 		log.Println("Read MEMCACHECLOUD  config from env")
@@ -101,8 +102,9 @@ func initialize_memcached() {
 	username := os.Getenv("MEMCACHEDCLOUD_USERNAME")
 	password := os.Getenv("MEMCACHEDCLOUD_PASSWORD")
 	if username != "" && password != "" {
+		log.Println("MEMCACEDCLOUT Auth variables present. Trying to use SASL...")
 		err = mc.Auth(username, password)
-		if err != nil {
+		if err == nil {
 			log.Println("Memcached SASL Auth Worked")
 		} else {
 			log.Println("Memcached SASL Auth failed: ", err)
@@ -116,10 +118,11 @@ func initialize_memcached() {
 	} else {
 		log.Println("Setting a memcache key did not work. ", set_err)
 	}
+	return mc
 }
 
 func main() {
-	initialize_memcached()
+	Common.mc = initialize_memcached()
 
 	load_existing_state()
 	load_api_keys()
