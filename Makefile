@@ -17,4 +17,4 @@ clean:
 	rm ether_housed
 
 logs:
-	heroku logs  -t
+	heroku logs  -t -n 0
