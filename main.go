@@ -86,9 +86,7 @@ var chttp = http.NewServeMux()
 
 func initialize_memcached() {
 	servers := os.Getenv("MEMCACHEDCLOUD_SERVERS")
-	username := os.Getenv("MEMCACHEDCLOUD_USERNAME")
-	password := os.Getenv("MEMCACHEDCLOUD_PASSWORD")
-	if servers != "" && username != "" && password != "" {
+	if servers != "" {
 		log.Println("Read MEMCACHECLOUD  config from env")
 	} else {
 		log.Println("Failed to read MEMCACHEDCLOUD Variables. Defaulting to localhost")
@@ -100,7 +98,19 @@ func initialize_memcached() {
 	} else {
 		log.Println("Memcache is available. Yay!")
 	}
-	set_err := mc.Set("test_key", "0", 0, 0, 3600 )
+	username := os.Getenv("MEMCACHEDCLOUD_USERNAME")
+	password := os.Getenv("MEMCACHEDCLOUD_PASSWORD")
+	if username != "" && password != "" {
+		err = mc.Auth(username, password)
+		if err != nil {
+			log.Println("Memcached SASL Auth Worked")
+		} else {
+			log.Println("Memcached SASL Auth failed: ", err)
+		}
+	} else {
+		log.Println("No memcached auth variables available. Skipping SASL")
+	}
+	set_err := mc.Set("test_key", "0", 0, 0, 3600)
 	if set_err == nil {
 		log.Println("Setting a test key in memcache worked.")
 	} else {
