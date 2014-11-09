@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/bradfitz/gomemcache/memcache"
 	"log"
 	"log/syslog"
 	"math"
@@ -12,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"github.com/bradfitz/gomemcache/memcache"
 )
 
 const NUM_HOUSES = 8
@@ -89,12 +89,17 @@ func initialize_memcached() {
 	username := os.Getenv("MEMCACHEDCLOUD_USERNAME")
 	password := os.Getenv("MEMCACHEDCLOUD_PASSWORD")
 	if servers != "" && username != "" && password != "" {
-		log.Println("Read memcache config from env")
+		log.Println("Read MEMCACHECLOUD  config from env")
 	} else {
-		log.Println("Failed to read MEMCACHEDCLOUD Variables. Trying localhost next")
-		mc := memcache.New("127.0.0.1:11211")
-		fmt.Println(mc)
-		log.Println("Failed to read memcache from env. Going without it.")
+		log.Println("Failed to read MEMCACHEDCLOUD Variables. Defaulting to localhost")
+		servers = "127.0.0.1:11211"
+	}
+	mc := memcache.New(servers)
+	err := mc.Set(&memcache.Item{Key: "test_key", Value: []byte("my value")})
+	if err != nil {
+		log.Println("Memcache isn't available. Error: ", err)
+	} else {
+		log.Println("Memcache is available. Yay!")
 	}
 }
 
