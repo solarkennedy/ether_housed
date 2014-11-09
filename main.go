@@ -81,6 +81,8 @@ func setup_logging() {
 	}
 }
 
+var chttp = http.NewServeMux()
+
 func main() {
 	load_existing_state()
 	load_api_keys()
@@ -98,6 +100,7 @@ func main() {
 		log.Print("No PORT variable. Defaulting to 3000")
 	}
 	log.Print("listening on " + port + "...")
+	chttp.Handle("/", http.FileServer(http.Dir("./public")))
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		panic(err)
@@ -106,15 +109,14 @@ func main() {
 
 func usage(res http.ResponseWriter, req *http.Request) {
 	if req.URL.Path != "/" {
-		http.NotFound(res, req)
-		log.Println("404: " + req.URL.Path)
-		return
+		chttp.ServeHTTP(res, req)
+	} else {
+		msg := "Welcome to ether_house.\n"
+		msg += "Source code: https://github.com/solarkennedy/ether_housed \n"
+		msg += "Client code: https://github.com/solarkennedy/ether_house \n"
+		fmt.Fprintln(res, msg)
+		log.Println("200: " + req.URL.Path)
 	}
-	msg := "Welcome to ether_house.\n"
-	msg += "Source code: https://github.com/solarkennedy/ether_housed \n"
-	msg += "Client code: https://github.com/solarkennedy/ether_house \n"
-	fmt.Fprintln(res, msg)
-	log.Println("200: " + req.URL.Path)
 }
 
 // boolarraytoint converts our array of booleans into a binary representation for http output
