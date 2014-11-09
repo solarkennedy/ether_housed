@@ -15,3 +15,6 @@ push_config:
 
 clean:
 	rm ether_housed
+
+logs:
+	heroku logs  -t
