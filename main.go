@@ -120,13 +120,13 @@ func usage(res http.ResponseWriter, req *http.Request) {
 }
 
 // boolarraytoint converts our array of booleans into a binary representation for http output
-func boolarraytoint(bool_array []bool) (the_int int64) {
+func boolarraytoint(bool_array []bool) (out int) {
 	for index, value := range bool_array {
 		if value == true {
-			the_int += int64(math.Exp2(float64(index)))
+			out += int(int64(math.Exp2(float64(index))))
 		}
 	}
-	return the_int
+	return out
 }
 
 func mactobinary(mac string) (output []byte) {
@@ -137,7 +137,7 @@ func mactobinary(mac string) (output []byte) {
 	return output
 }
 
-func get_state_as_int() (state_int int64) {
+func get_state_as_int() (state_int int) {
 	Common.lock.Lock()
 	defer Common.lock.Unlock()
 	return boolarraytoint(Common.state)
@@ -150,7 +150,8 @@ func handle_state(res http.ResponseWriter, req *http.Request) {
 	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
 	if validate_key(api_key, int(house_id)) {
 		state_value := get_state_as_int()
-		fmt.Fprintf(res, "%c", state_value)
+		tmp_bytes := []byte{byte(state_value)}
+		res.Write(tmp_bytes)
 		log.Printf("200: Current State: %8b", state_value)
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
