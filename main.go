@@ -46,8 +46,22 @@ func (c *common) Set(id int, d bool) {
 
 // load_existing_state pulls state from an external datastore
 func load_existing_state() {
-	// BUG: Get state out of memcache
-	Common.state = []bool{false, false, false, false, false, false, false, false}
+	if Common.mc != nil {
+		log.Printf("Retrieving initial state from memcache...")
+		val, cas, flags, err := Common.mc.Get("state")
+		log.Printf(val, cas, flags, err)
+		if err == nil {
+			log.Printf("Done. Loaded state: %08b", val)
+			Common.state = stringtoboolarray(val)
+		} else {
+			log.Printf("Error loading state from memcache, ", err)
+			log.Printf("Loading a blank state instead")
+			Common.state = []bool{false, false, false, false, false, false, false, false}
+		}
+	} else {
+		log.Printf("Memcache not available. Defaulting to a blank state")
+		Common.state = []bool{false, false, false, false, false, false, false, false}
+	}
 	return
 }
 
@@ -167,6 +181,19 @@ func boolarraytoint(bool_array []bool) (out int) {
 		}
 	}
 	return out
+}
+
+// stringtoboolarray takes a stored string in memcache and gets it to the format we need for operation
+func stringtoboolarray(in string) (output []bool) {
+	var x uint
+	theint := in[0]
+	output = []bool{false, false, false, false, false, false, false, false}
+	for x = 0; x < 8; x++ {
+		if (theint>>x)&1 == 1 {
+			output[x] = true
+		}
+	}
+	return output
 }
 
 func mactobinary(mac string) (output []byte) {
