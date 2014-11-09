@@ -198,7 +198,7 @@ func turn_on(res http.ResponseWriter, req *http.Request) {
 		log.Printf("200: turn_on: %v", house_id)
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
-		log.Printf("403: /state from %v, using api key %v", house_id, api_key)
+		log.Printf("403: /on from %v, using api key %v", house_id, api_key)
 	}
 }
 
@@ -212,7 +212,7 @@ func turn_off(res http.ResponseWriter, req *http.Request) {
 		log.Printf("200: turn_off: %v", house_id)
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
-		log.Printf("403: /state from %v, using api key %v", house_id, api_key)
+		log.Printf("403: /off from %v, using api key %v", house_id, api_key)
 	}
 }
 
