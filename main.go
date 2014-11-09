@@ -3,7 +3,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/bmizerany/mc"
 	"log"
 	"log/syslog"
 	"math"
@@ -94,12 +94,17 @@ func initialize_memcached() {
 		log.Println("Failed to read MEMCACHEDCLOUD Variables. Defaulting to localhost")
 		servers = "127.0.0.1:11211"
 	}
-	mc := memcache.New(servers)
-	err := mc.Set(&memcache.Item{Key: "test_key", Value: []byte("my value")})
+	mc, err := mc.Dial("tcp", servers)
 	if err != nil {
 		log.Println("Memcache isn't available. Error: ", err)
 	} else {
 		log.Println("Memcache is available. Yay!")
+	}
+	set_err := mc.Set("test_key", "0", 0, 0, 3600 )
+	if set_err == nil {
+		log.Println("Setting a test key in memcache worked.")
+	} else {
+		log.Println("Setting a memcache key did not work. ", set_err)
 	}
 }
 
