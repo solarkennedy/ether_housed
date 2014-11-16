@@ -1,4 +1,5 @@
 // Currently everything for ether_housed is in the main package
+// BUG: Split up stuff into a separate package?
 package main
 
 import (
