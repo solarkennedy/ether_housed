@@ -42,6 +42,17 @@ func (c *common) Set(id int, d bool) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.state[id] = d
+	log.Printf("Saving into memcache...")
+	state_value := strconv.Itoa(boolarraytoint(c.state))
+	ocas := 0
+	exp := 0
+	flags := 0
+	err := c.mc.Set("state", state_value, ocas, flags, exp)
+	if err == nil {
+		log.Printf("memcached Saved state: %08b", state_value)
+	} else {
+		log.Printf("Error saving state into memcache: ", err)
+	}
 }
 
 // load_existing_state pulls state from an external datastore
