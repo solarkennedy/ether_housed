@@ -283,6 +283,7 @@ func turn_on(res http.ResponseWriter, req *http.Request) {
 	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
 	if validate_key(api_key, int(house_id)) {
 		Common.Set(int(house_id), true)
+		fmt.Fprintf(res, "Turned on %v", house_id)
 		log.Printf("200: turn_on: %v", house_id)
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
@@ -297,6 +298,7 @@ func turn_off(res http.ResponseWriter, req *http.Request) {
 	house_id, _ := strconv.ParseInt(house_id_string, 0, 64)
 	if validate_key(api_key, int(house_id)) {
 		Common.Set(int(house_id), false)
+		fmt.Fprintf(res, "Turned off %v", house_id)
 		log.Printf("200: turn_off: %v", house_id)
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)

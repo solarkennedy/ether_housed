@@ -18,3 +18,6 @@ clean:
 
 logs:
 	heroku logs  -t -n 0
+
+fmt:
+	go fmt .
