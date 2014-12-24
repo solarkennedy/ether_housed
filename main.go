@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 const NUM_HOUSES = 8
@@ -24,6 +25,7 @@ type common struct {
 	state      []bool
 	api_key    []string
 	target_mac []string
+	last_seen  []int64
 	mc         *mc.Conn
 }
 
@@ -74,6 +76,7 @@ func load_existing_state() {
 		log.Printf("Memcache not available. Defaulting to a blank state")
 		Common.state = []bool{false, false, false, false, false, false, false, false}
 	}
+	Common.last_seen = []int64{0, 0, 0, 0, 0, 0, 0, 0}
 	return
 }
 
@@ -173,6 +176,11 @@ func main() {
 	}
 }
 
+// record_last_seen saves a timestamp of when a house checks in
+func record_last_seen(id int64) {
+	Common.last_seen[int(id)] = time.Now().Unix()
+}
+
 func usage(res http.ResponseWriter, req *http.Request) {
 	if req.URL.Path != "/" {
 		chttp.ServeHTTP(res, req)
@@ -232,10 +240,24 @@ func handle_state(res http.ResponseWriter, req *http.Request) {
 		tmp_bytes := []byte{byte(state_value)}
 		res.Write(tmp_bytes)
 		log.Printf("200: Current State: %08b", state_value)
+		record_last_seen(house_id)
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
 		log.Printf("403: /state from %v, using api key %v", house_id, api_key)
 	}
+}
+
+func last_seen_output(last_seen []int64) (output string) {
+	for x := 0; x < 8; x++ {
+		output += fmt.Sprintf("House %d: ", x)
+		if last_seen[x] == 0 {
+			output += "Never"
+		} else {
+			output += time.Unix(last_seen[x], 0).String()
+		}
+		output += "\n"
+	}
+	return output
 }
 
 func handle_info(res http.ResponseWriter, req *http.Request) {
@@ -250,6 +272,8 @@ func handle_info(res http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(res, "Information on house_id: %v\n", house_id)
 		fmt.Fprintf(res, "Current state: "+"%08b (%v)\n", state_value, state_value)
 		fmt.Fprintf(res, "Target MAC Address: %v\n\n\n", target_mac)
+		last_seen_output := last_seen_output(Common.last_seen)
+		fmt.Fprintf(res, "Last seen: \n%s\n\n", last_seen_output)
 		fmt.Fprintf(res, "Server Source code: https://github.com/solarkennedy/ether_housed \n")
 		fmt.Fprintf(res, "Client code: https://github.com/solarkennedy/ether_house \n")
 		log.Printf("200: /info for %v", house_id)
