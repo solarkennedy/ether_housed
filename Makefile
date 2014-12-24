@@ -21,3 +21,6 @@ logs:
 
 fmt:
 	go fmt .
+
+deploy:
+	git push heroku master
