@@ -66,7 +66,7 @@ func TestLastseenoutput2(t *testing.T) {
 	input := []int64{1257894000, 0, 0, 0, 0, 0, 0, 0}
 	actual := last_seen_output(input)
 	expected :=
-		`House 0: 2009-11-10 15:00:00 -0800 PST
+		`House 0: 2009-11-10 23:00:00 +0000 UTC
 House 1: Never
 House 2: Never
 House 3: Never
