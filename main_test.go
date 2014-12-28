@@ -2,6 +2,9 @@ package main
 
 import "testing"
 import "reflect"
+import "time"
+import "fmt"
+import "github.com/dustin/go-humanize"
 
 func TestMain(t *testing.T) {
 }
@@ -46,7 +49,8 @@ func BenchmarkBoolarraytoint(b *testing.B) {
 
 func TestLastseenoutputNever(t *testing.T) {
 	input := []int64{0, 0, 0, 0, 0, 0, 0, 0}
-	actual := last_seen_output(input)
+	mocktime := time.Unix(1257894000, 0)
+	actual := last_seen_output(input, mocktime)
 	expected :=
 		`House 0: Never
 House 1: Never
@@ -64,9 +68,11 @@ House 7: Never
 
 func TestLastseenoutput2(t *testing.T) {
 	input := []int64{1257894000, 0, 0, 0, 0, 0, 0, 0}
-	actual := last_seen_output(input)
+	mocktime := time.Unix(1257894000, 0)
+	actual := last_seen_output(input, mocktime)
+	human_time_diff := humanize.Time(mocktime)
 	expected :=
-		`House 0: 2009-11-10 23:00:00 +0000 UTC
+		fmt.Sprintf(`House 0: 2009-11-10 23:00:00 +0000 UTC (%s)
 House 1: Never
 House 2: Never
 House 3: Never
@@ -74,8 +80,12 @@ House 4: Never
 House 5: Never
 House 6: Never
 House 7: Never
-`
+`, human_time_diff)
 	if expected != actual {
-		t.Error("Expected, actual: ", expected, actual)
+		t.Error("Output didn't match")
+		fmt.Println("Expected:")
+		fmt.Println(expected)
+		fmt.Println("Actual:")
+		fmt.Println(actual)
 	}
 }
