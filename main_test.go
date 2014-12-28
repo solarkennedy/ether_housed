@@ -33,7 +33,7 @@ func TestBoolarraytoint255(t *testing.T) {
 
 func TestStringtoboolarray(t *testing.T) {
 	input := "65"
-	expected := []bool{false, true, false, false, false, false, false, true}
+	expected := []bool{true, false, false, false, false, false, true, false}
 	actual := stringtoboolarray(input)
 	if !reflect.DeepEqual(expected, actual) {
 		t.Error("Expected, actual: ", expected, actual)
