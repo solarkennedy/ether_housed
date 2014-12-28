@@ -210,7 +210,8 @@ func stringtoboolarray(in string) (output []bool) {
 	theint, _ := strconv.Atoi(in)
 	output = []bool{false, false, false, false, false, false, false, false}
 	for x = 0; x < 8; x++ {
-		output[((x - 7) % 8)] = bitRead(uint8(theint), x)
+		output[x] = bitRead(uint8(theint), x)
+		//output[((x - 7) % 8)] = bitRead(uint8(theint), x)
 	}
 	return output
 }
