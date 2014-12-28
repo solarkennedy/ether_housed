@@ -207,10 +207,10 @@ func boolarraytoint(bool_array []bool) (out int) {
 // stringtoboolarray takes a stored string in memcache and gets it to the format we need for operation
 func stringtoboolarray(in string) (output []bool) {
 	var x uint
-	theint := in[0]
+	theint, _ := strconv.Atoi(in)
 	output = []bool{false, false, false, false, false, false, false, false}
 	for x = 0; x < 8; x++ {
-		output[((x - 7) % 8)] = bitRead(theint, x)
+		output[((x - 7) % 8)] = bitRead(uint8(theint), x)
 	}
 	return output
 }
