@@ -65,8 +65,9 @@ func load_existing_state() {
 		val, cas, flags, err := Common.mc.Get("state")
 		log.Printf(val, cas, flags, err)
 		if err == nil {
-			log.Printf("Done. Loaded state: %08b", val)
 			Common.state = stringtoboolarray(val)
+			state_value := get_state_as_int()
+			log.Printf("Done. Loaded state: %08b", state_value)
 		} else {
 			log.Printf("Error loading state from memcache, ", err)
 			log.Printf("Loading a blank state instead")
@@ -209,11 +210,21 @@ func stringtoboolarray(in string) (output []bool) {
 	theint := in[0]
 	output = []bool{false, false, false, false, false, false, false, false}
 	for x = 0; x < 8; x++ {
-		if (theint>>x)&1 == 1 {
-			output[x] = true
-		}
+		output[((x - 7) % 8)] = bitRead(theint, x)
 	}
 	return output
+}
+
+func bitRead(value uint8, bit uint) bool {
+	return inttobool((int(value) >> bit) & 0x01)
+}
+
+func inttobool(x int) bool {
+	if x == 1 {
+		return true
+	} else {
+		return false
+	}
 }
 
 func mactobinary(mac string) (output []byte) {
