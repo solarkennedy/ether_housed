@@ -7,8 +7,8 @@ run:
 	./ether_housed'
 
 deps:
-# Ignoring for now
-#	godep get
+	godep get
+	godep save
 
 push_config:
 	./push-config.sh
