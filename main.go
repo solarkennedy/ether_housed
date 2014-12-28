@@ -266,8 +266,9 @@ func last_seen_output(last_seen []int64, now time.Time) (output string) {
 		if last_seen[x] == 0 {
 			output += "Never"
 		} else {
-			output += time.Unix(last_seen[x], 0).String()
-			output += fmt.Sprintf(" (%s)", humanize.Time(now))
+			last_seen_time := time.Unix(last_seen[x], 0)
+			output += last_seen_time.String()
+			output += fmt.Sprintf(" (%s)", humanize.Time(last_seen_time))
 		}
 		output += "\n"
 	}
