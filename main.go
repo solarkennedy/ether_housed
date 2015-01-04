@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"github.com/bmizerany/mc"
+	"github.com/dustin/go-humanize"
 	"log"
 	"log/syslog"
 	"math"
@@ -15,7 +16,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"github.com/dustin/go-humanize"
 )
 
 const NUM_HOUSES = 8
@@ -251,6 +251,7 @@ func handle_state(res http.ResponseWriter, req *http.Request) {
 	if validate_key(api_key, int(house_id)) {
 		state_value := get_state_as_int()
 		tmp_bytes := []byte{byte(state_value)}
+		res.Header().Set("Content-Type", "application/octet-stream")
 		res.Write(tmp_bytes)
 		log.Printf("200: Current State: %08b", state_value)
 		record_last_seen(house_id)
@@ -306,8 +307,8 @@ func target_mac_handler(res http.ResponseWriter, req *http.Request) {
 	if validate_key(api_key, int(house_id)) {
 		target_mac := Common.target_mac[house_id]
 		target_mac_binary := mactobinary(target_mac)
-		target_mac_string := string(target_mac_binary[:6])
-		fmt.Fprintf(res, target_mac_string)
+		res.Header().Set("Content-Type", "application/octet-stream")
+		res.Write(target_mac_binary)
 		log.Printf("200: target_mac: %v ", target_mac)
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
