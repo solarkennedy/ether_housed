@@ -311,7 +311,7 @@ func target_mac_handler(res http.ResponseWriter, req *http.Request) {
 		log.Printf("200: target_mac: %v ", target_mac)
 	} else {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
-		log.Printf("403: /state from %v, using api key %v", house_id, api_key)
+		log.Printf("403: /target_mac from %v, using api key %v", house_id, api_key)
 	}
 }
 
