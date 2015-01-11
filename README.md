@@ -31,13 +31,13 @@ clients as they report in.
 
 ## Requirements
 
-* golang 1.3
-* memcached (optional)
+* golang 1.3 (1.2.1 seems to work too)
+* memcached
 * heroku (optional)
 
 ## Install
 
-Using heroku
+### Using heroku
 
 * Install heroku, get an account, log in with the tool
 * Clone this repo
@@ -59,6 +59,16 @@ Using heroku
 
     make push_config
 
+### Locally on Ubuntu
+
+    # cd to directory containing this code
+    sudo apt-get install go
+    export GOPATH=$HOME/gopath:`pwd`/Godeps/_workspace
+    go get github.com/kr/godep
+    sudo apt-get install memcached
+    go build .
+    ./solarkennedy-ether_housed
+
 ## Security
 
 The client uses HTTP in combination with an API key to authenticate and
@@ -68,4 +78,3 @@ with that API key.
 
 This key is considered a simple shared secret. If you want new ones, change the
 secrets.sh file and program the new key on the arduino.
-
