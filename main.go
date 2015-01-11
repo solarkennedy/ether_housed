@@ -158,12 +158,12 @@ func main() {
 	load_existing_state()
 	load_api_keys()
 	load_target_macs()
-	http.HandleFunc("/", usage)
-	http.HandleFunc("/on", turn_on)
-	http.HandleFunc("/off", turn_off)
+	http.HandleFunc("/", handle_usage)
+	http.HandleFunc("/on", handle_turn_on)
+	http.HandleFunc("/off", handle_turn_off)
 	http.HandleFunc("/state", handle_state)
 	http.HandleFunc("/info", handle_info)
-	http.HandleFunc("/target_mac", target_mac_handler)
+	http.HandleFunc("/target_mac", handle_target_mac)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -183,7 +183,7 @@ func record_last_seen(id int64) {
 	Common.last_seen[int(id)] = time.Now().Unix()
 }
 
-func usage(res http.ResponseWriter, req *http.Request) {
+func handle_usage(res http.ResponseWriter, req *http.Request) {
 	if req.URL.Path != "/" {
 		chttp.ServeHTTP(res, req)
 	} else {
@@ -299,7 +299,7 @@ func handle_info(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func target_mac_handler(res http.ResponseWriter, req *http.Request) {
+func handle_target_mac(res http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	api_key := query.Get("api_key")
 	house_id_string := query.Get("id")
@@ -316,7 +316,7 @@ func target_mac_handler(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func turn_on(res http.ResponseWriter, req *http.Request) {
+func handle_turn_on(res http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	api_key := query.Get("api_key")
 	house_id_string := query.Get("id")
@@ -331,7 +331,7 @@ func turn_on(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func turn_off(res http.ResponseWriter, req *http.Request) {
+func handle_turn_off(res http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	api_key := query.Get("api_key")
 	house_id_string := query.Get("id")
