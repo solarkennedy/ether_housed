@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -164,6 +165,7 @@ func main() {
 	http.HandleFunc("/state", handle_state)
 	http.HandleFunc("/info", handle_info)
 	http.HandleFunc("/target_mac", handle_target_mac)
+	http.HandleFunc("/log", handle_log)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -319,6 +321,19 @@ func handle_turn_off(res http.ResponseWriter, req *http.Request) {
 	Common.Set(int(house_id), false)
 	fmt.Fprintf(res, "Turned off %v", house_id)
 	log.Printf("200: turn_off: %v", house_id)
+}
+
+func handle_log(res http.ResponseWriter, req *http.Request) {
+	house_id := validate_key(res, req)
+	if house_id < 0 {
+		return
+	}
+	out, err := exec.Command("./etherhoused-log", strconv.FormatInt(house_id, 10)).Output()
+	if err != nil {
+		http.Error(res, "500 " + err.Error(), 500)
+		log.Printf("500: /log %v: " + err.Error(), house_id)
+	}
+	fmt.Fprintf(res, "%s", out)
 }
 
 // validate_key ensures that the provided key matches the one stored for that house_id
