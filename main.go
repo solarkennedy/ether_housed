@@ -21,9 +21,9 @@ import (
 const NUM_HOUSES = 8
 
 type event struct {
-	timestamp	int64;
-	house_id	int64;
-	message		string;
+	timestamp int64
+	house_id  int64
+	message   string
 }
 
 // common is a struct to store the global state and config
@@ -323,6 +323,11 @@ func handle_info(res http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(res, "Target MAC Address: %v\n\n\n", target_mac)
 	last_seen_output := last_seen_output(Common.last_seen, time.Now())
 	fmt.Fprintf(res, "Last seen: \n%s\n\n", last_seen_output)
+	log_text := get_logs(house_id)
+	if log_text == "" {
+		log_text = "None yet"
+	}
+	fmt.Fprintf(res, "Logs for this house:\n%s\n\n", log_text)
 	fmt.Fprintf(res, "Server Source code: https://github.com/solarkennedy/ether_housed \n")
 	fmt.Fprintf(res, "Client code: https://github.com/solarkennedy/ether_house \n")
 	log.Printf("200: /info for %v", house_id)
@@ -363,11 +368,7 @@ func handle_turn_off(res http.ResponseWriter, req *http.Request) {
 	Common.LogEvent(house_id, "handle_turn_off")
 }
 
-func handle_log(res http.ResponseWriter, req *http.Request) {
-	house_id := validate_key(res, req)
-	if house_id < 0 {
-		return
-	}
+func get_logs(house_id int64) string {
 	output := ""
 	events := Common.GetLog()
 	for _, e := range events {
@@ -379,7 +380,16 @@ func handle_log(res http.ResponseWriter, req *http.Request) {
 		output += e.message
 		output += "\n"
 	}
-	fmt.Fprintf(res, output)
+	return output
+}
+
+func handle_log(res http.ResponseWriter, req *http.Request) {
+	house_id := validate_key(res, req)
+	if house_id < 0 {
+		return
+	}
+	logs_text := get_logs(house_id)
+	fmt.Fprintf(res, logs_text)
 	log.Printf("200: /log for %v", house_id)
 }
 
@@ -390,7 +400,7 @@ func validate_key(res http.ResponseWriter, req *http.Request) (house_id int64) {
 	api_key := query.Get("api_key")
 	house_id_string := query.Get("id")
 	house_id, _ = strconv.ParseInt(house_id_string, 0, 64)
-	if (Common.api_key[house_id] != api_key) {
+	if Common.api_key[house_id] != api_key {
 		http.Error(res, "403 Forbidden : you can't access this resource.", 403)
 		log.Printf("403: %s from %v, using api key %v", url.Path, house_id, api_key)
 		return -1
