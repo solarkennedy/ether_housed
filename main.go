@@ -325,7 +325,7 @@ func handle_info(res http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(res, "Last seen: \n%s\n\n", last_seen_output)
 	log_text := get_logs(house_id)
 	if log_text == "" {
-		log_text = "None yet"
+		log_text = "(None yet)\n"
 	}
 	fmt.Fprintf(res, "Logs for this house:\n%s\n\n", log_text)
 	fmt.Fprintf(res, "Server Source code: https://github.com/solarkennedy/ether_housed \n")
