@@ -20,6 +20,12 @@ import (
 
 const NUM_HOUSES = 8
 
+type event struct {
+	timestamp	int64;
+	house_id	int64;
+	message		string;
+}
+
 // common is a struct to store the global state and config
 type common struct {
 	lock       sync.RWMutex
@@ -27,6 +33,7 @@ type common struct {
 	api_key    []string
 	target_mac []string
 	last_seen  []int64
+	events     []event
 	mc         *mc.Conn
 }
 
@@ -59,6 +66,36 @@ func (c *common) Set(id int, d bool) {
 	}
 }
 
+func (c *common) LogEvent(house_id int64, message string) {
+	ts := time.Now().Unix()
+	e := event{ts, house_id, message}
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.events = append(c.events, e)
+	keep_start := 0
+	max_items := 8 * 100 // houses * events
+	cur_len := len(c.events)
+	if cur_len > max_items {
+		keep_start = cur_len - max_items
+	}
+	var max_age int64 = 7 * 24 * 60 * 60
+	for i := keep_start; i < cur_len; i++ {
+		event_age := ts - c.events[i].timestamp
+		if event_age > max_age {
+			keep_start = i + 1
+		}
+	}
+	if keep_start > 0 {
+		c.events = c.events[keep_start:]
+	}
+}
+
+func (c *common) GetLog() []event {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	return c.events
+}
+
 // load_existing_state pulls state from an external datastore
 func load_existing_state() {
 	if Common.mc != nil {
@@ -79,6 +116,7 @@ func load_existing_state() {
 		Common.state = []bool{false, false, false, false, false, false, false, false}
 	}
 	Common.last_seen = []int64{0, 0, 0, 0, 0, 0, 0, 0}
+	Common.events = []event{}
 	return
 }
 
@@ -164,6 +202,7 @@ func main() {
 	http.HandleFunc("/state", handle_state)
 	http.HandleFunc("/info", handle_info)
 	http.HandleFunc("/target_mac", handle_target_mac)
+	http.HandleFunc("/log", handle_log)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -299,6 +338,7 @@ func handle_target_mac(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "application/octet-stream")
 	res.Write(target_mac_binary)
 	log.Printf("200: target_mac: %v ", target_mac)
+	Common.LogEvent(house_id, "handle_target_mac")
 }
 
 func handle_turn_on(res http.ResponseWriter, req *http.Request) {
@@ -309,6 +349,7 @@ func handle_turn_on(res http.ResponseWriter, req *http.Request) {
 	Common.Set(int(house_id), true)
 	fmt.Fprintf(res, "Turned on %v", house_id)
 	log.Printf("200: turn_on: %v", house_id)
+	Common.LogEvent(house_id, "handle_turn_on")
 }
 
 func handle_turn_off(res http.ResponseWriter, req *http.Request) {
@@ -319,6 +360,27 @@ func handle_turn_off(res http.ResponseWriter, req *http.Request) {
 	Common.Set(int(house_id), false)
 	fmt.Fprintf(res, "Turned off %v", house_id)
 	log.Printf("200: turn_off: %v", house_id)
+	Common.LogEvent(house_id, "handle_turn_off")
+}
+
+func handle_log(res http.ResponseWriter, req *http.Request) {
+	house_id := validate_key(res, req)
+	if house_id < 0 {
+		return
+	}
+	output := ""
+	events := Common.GetLog()
+	for _, e := range events {
+		if e.house_id != house_id {
+			continue
+		}
+		output += time.Unix(e.timestamp, 0).String()
+		output += fmt.Sprintf(": House %d: ", e.house_id)
+		output += e.message
+		output += "\n"
+	}
+	fmt.Fprintf(res, output)
+	log.Printf("200: /log for %v", house_id)
 }
 
 // validate_key ensures that the provided key matches the one stored for that house_id
