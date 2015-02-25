@@ -1,5 +1,6 @@
 test:
 	TZ="UTC" go test -v -bench=.
+	go vet
 
 run:
 	go build . 

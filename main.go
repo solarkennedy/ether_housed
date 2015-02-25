@@ -60,9 +60,9 @@ func (c *common) Set(id int, d bool) {
 	flags := 0
 	err := c.mc.Set("state", state_value, ocas, flags, exp)
 	if err == nil {
-		log.Printf("memcached Saved state: %08b", state_value)
+		log.Printf("memcached Saved state: %08b", boolarraytoint(c.state))
 	} else {
-		log.Printf("Error saving state into memcache: ", err)
+		log.Printf("Error saving state into memcache: %s", err)
 	}
 }
 
@@ -107,7 +107,7 @@ func load_existing_state() {
 			state_value := get_state_as_int()
 			log.Printf("Done. Loaded state: %08b", state_value)
 		} else {
-			log.Printf("Error loading state from memcache, ", err)
+			log.Printf("Error loading state from memcache: %s", err)
 			log.Printf("Loading a blank state instead")
 			Common.state = []bool{false, false, false, false, false, false, false, false}
 		}
