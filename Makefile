@@ -1,6 +1,7 @@
 test:
 	TZ="UTC" go test -v -bench=.
-	go vet
+	# Not on tip in travis
+	#go vet
 
 run:
 	go build . 
