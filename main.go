@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -391,6 +392,19 @@ func handle_log(res http.ResponseWriter, req *http.Request) {
 	logs_text := get_logs(house_id)
 	fmt.Fprintf(res, logs_text)
 	log.Printf("200: /log for %v", house_id)
+}
+
+func handle_log(res http.ResponseWriter, req *http.Request) {
+	house_id := validate_key(res, req)
+	if house_id < 0 {
+		return
+	}
+	out, err := exec.Command("./etherhoused-log", strconv.FormatInt(house_id, 10)).Output()
+	if err != nil {
+		http.Error(res, "500 " + err.Error(), 500)
+		log.Printf("500: /log %v: " + err.Error(), house_id)
+	}
+	fmt.Fprintf(res, "%s", out)
 }
 
 // validate_key ensures that the provided key matches the one stored for that house_id
