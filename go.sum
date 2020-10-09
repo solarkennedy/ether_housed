@@ -1,0 +1,4 @@
+github.com/bmizerany/mc v0.0.0-20140411075201-eadf44dc7cb4 h1:DcAtVFtCmyffG0bHeCQxw0DtUBKH7rATZ/8wNCQUdYc=
+github.com/bmizerany/mc v0.0.0-20140411075201-eadf44dc7cb4/go.mod h1:ELaoyfvY8sW5J6I1pehzCBIPmKVDOdyZNS331TLZjcI=
+github.com/dustin/go-humanize v0.0.0-20141104060626-b198514c204f h1:976BmIzhH4Jd695eisKq7pTVDdlaMUTqaN+l3vuewyw=
+github.com/dustin/go-humanize v0.0.0-20141104060626-b198514c204f/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=

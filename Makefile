@@ -8,10 +8,6 @@ run:
 	bash -c 'source secrets.sh && \
 	./ether_housed'
 
-deps:
-	godep get
-	godep save
-
 push_config:
 	./push-config.sh
 
