@@ -4,10 +4,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/bmizerany/mc"
-	"github.com/dustin/go-humanize"
 	"log"
-	"log/syslog"
 	"math"
 	"net"
 	"net/http"
@@ -16,6 +13,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/bmizerany/mc"
+	"github.com/dustin/go-humanize"
 )
 
 const NUM_HOUSES = 8
@@ -117,7 +117,6 @@ func load_existing_state() {
 	}
 	Common.last_seen = []int64{0, 0, 0, 0, 0, 0, 0, 0}
 	Common.events = []event{}
-	return
 }
 
 // load_target_macs gets the config for which MAC addresses are associated with each house
@@ -142,13 +141,6 @@ func load_api_keys() {
 			log.Println("WARNING: Didn't get an API key for " + strconv.Itoa(i) + ".")
 		}
 		log.Println("INFO: API Key for " + strconv.Itoa(i) + " is " + Common.api_key[i])
-	}
-}
-
-func setup_logging() {
-	logwriter, e := syslog.New(syslog.LOG_NOTICE, "ether_housed")
-	if e == nil {
-		log.SetOutput(logwriter)
 	}
 }
 
@@ -237,7 +229,7 @@ func handle_usage(res http.ResponseWriter, req *http.Request) {
 // boolarraytoint converts our array of booleans into a binary representation for http output
 func boolarraytoint(bool_array []bool) (out int) {
 	for index, value := range bool_array {
-		if value == true {
+		if value {
 			out += int(int64(math.Exp2(float64(index))))
 		}
 	}
@@ -290,7 +282,7 @@ func handle_state(res http.ResponseWriter, req *http.Request) {
 	state_value := get_state_as_int()
 	tmp_bytes := []byte{byte(state_value)}
 	res.Header().Set("Content-Type", "application/octet-stream")
-	res.Write(tmp_bytes)
+	_, _ = res.Write(tmp_bytes)
 	log.Printf("200: Current State: %08b", state_value)
 	record_last_seen(house_id)
 }
@@ -341,7 +333,7 @@ func handle_target_mac(res http.ResponseWriter, req *http.Request) {
 	target_mac := Common.target_mac[house_id]
 	target_mac_binary := mactobinary(target_mac)
 	res.Header().Set("Content-Type", "application/octet-stream")
-	res.Write(target_mac_binary)
+	_, _ = res.Write(target_mac_binary)
 	log.Printf("200: target_mac: %v ", target_mac)
 	Common.LogEvent(house_id, "handle_target_mac")
 }
@@ -389,7 +381,7 @@ func handle_log(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	logs_text := get_logs(house_id)
-	fmt.Fprintf(res, logs_text)
+	fmt.Print(res, logs_text)
 	log.Printf("200: /log for %v", house_id)
 }
 
